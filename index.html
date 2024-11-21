@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-6" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Stock Entry Form</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      /* General Styling */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to bottom, #f2f2f2, #e0e0e0);
+      }
+
+      form {
+        width: 100%;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        animation: fadeIn 0.8s ease-out;
+      }
+
+      .title-container {
+        display: flex;
+        justify-content: center;
+      }
+
+      h3 {
+        font-size: 2rem;
+        color: #4caf50;
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
+
+      .required::after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      input[type="time"],
+      select {
+        height: 7.5vh;
+        width: 100%;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 24px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border: 2px solid #4caf50;
+        box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      .progress-container {
+        width: 100%;
+        background-color: #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        width: 50%; /* Dynamically update percentage */
+        height: 10px;
+        background-color: #4caf50;
+        transition: width 0.3s;
+      }
+
+      .error {
+        border: 2px solid red;
+      }
+
+      .error-message {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 5px;
+      }
+
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 4px solid #4caf50;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+        display: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+
+        form {
+          padding: 15px;
+        }
+
+        h3 {
+          font-size: 1.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        select {
+          font-size: 24px;
+          height: 44px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="title-container">
+      <h3>Daily Stock Entry Form</h3>
+    </div>
+    <form id="logForm" onsubmit="return handleFormSubmit(event)">
+      <label for="serialNo">Serial Number:</label>
+      <input type="text" id="serialNo" name="serialNo" readonly />
+
+      <label for="openingDate">Date:</label>
+      <input
+        type="date"
+        id="openingDate"
+        name="Date"
+        required
+        onchange="populateWeekAndMonth()"
+      />
+
+      <label for="week">Week:</label>
+      <input type="text" id="week" name="week" readonly />
+
+      <label for="month">Month:</label>
+      <input type="text" id="month" name="month" readonly />
+
+      <label for="depotName" class="required">Depot Name:</label>
+      <select id="depotName" name="depotName" required>
+        <option value="">Select a Depot</option>
+        <option value="Bandra">Bandra</option>
+        <!-- Add other depots here -->
+      </select>
+
+      <label for="GRNno" class="required">GRN no:</label>
+      <input type="text" id="GRNno" name="GRNno" required />
+
+      <label for="adblueDef">ADBLUE / DEF:</label>
+      <select
+        id="adblueDef"
+        name="adblueDef"
+        onchange="toggleQuantityField('DEFGRNQty', this)"
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+
+      <label for="DEFGRNQty">DEF GRN Qty (L):</label>
+      <input type="number" id="DEFGRNQty" name="DEFGRNQty" disabled required />
+
+      <label for="engineOil">ENGINE OIL:</label>
+      <select
+        id="engineOil"
+        name="engineOil"
+        onchange="toggleQuantityField('ENGINEOILGRNQty', this)"
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+
+      <label for="ENGINEOILGRNQty">ENGINE OIL GRN Qty:</label>
+      <input
+        type="number"
+        id="ENGINEOILGRNQty"
+        name="ENGINEOILGRNQty"
+        disabled
+        required
+      />
+
+      <label for="coolant">COOLANT:</label>
+      <select
+        id="coolant"
+        name="coolant"
+        onchange="toggleQuantityField('COOLANTGRNQty', this)"
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+
+      <label for="COOLANTGRNQty">COOLANT GRN Qty:</label>
+      <input
+        type="number"
+        id="COOLANTGRNQty"
+        name="COOLANTGRNQty"
+        disabled
+        required
+      />
+
+      <label for="physicalStockMaterial1">Physical Stock Material 1:</label>
+      <select
+        id="physicalStockMaterial1"
+        name="physicalStockMaterial1"
+        onchange="togglePhysicalStockQuantityField('physicalStockQty1', this)"
+      >
+        <option value="">Select Material</option>
+        <option value="ADBLUE">ADBLUE</option>
+      </select>
+
+      <label for="physicalStockQty1">Physical Stock Qty 1:</label>
+      <input
+        type="number"
+        id="physicalStockQty1"
+        name="physicalStockQty1"
+        disabled
+        required
+      />
+
+      <label for="physicalStockMaterial2">Physical Stock Material 2:</label>
+      <select
+        id="physicalStockMaterial2"
+        name="physicalStockMaterial2"
+        onchange="togglePhysicalStockQuantityField('physicalStockQty2', this)"
+      >
+        <option value="">Select Material</option>
+        <option value="ENGINE OIL">ENGINE OIL</option>
+      </select>
+
+      <label for="physicalStockQty2">Physical Stock Qty 2:</label>
+      <input
+        type="number"
+        id="physicalStockQty2"
+        name="physicalStockQty2"
+        disabled
+        required
+      />
+
+      <label for="physicalStockMaterial3">Physical Stock Material 3:</label>
+      <select
+        id="physicalStockMaterial3"
+        name="physicalStockMaterial3"
+        onchange="togglePhysicalStockQuantityField('physicalStockQty3', this)"
+      >
+        <option value="">Select Material</option>
+        <option value="COOLANT">COOLANT</option>
+      </select>
+
+      <label for="physicalStockQty3">Physical Stock Qty 3:</label>
+      <input
+        type="number"
+        id="physicalStockQty3"
+        name="physicalStockQty3"
+        disabled
+        required
+      />
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <script>
+      function handleFormSubmit(event) {
+        event.preventDefault();
+        const form = document.getElementById("logForm");
+        const formData = new FormData(form);
+        const mandatoryFields = [
+          "depotName",
+          "GRNno",
+          "Date",
+          "week",
+          "month",
+          "TotalStockafterGRNQty",
+          "physicalStockQty1",
+          "physicalStockQty2",
+          "physicalStockQty3",
+        ];
+
+        let isValid = true;
+        mandatoryFields.forEach((field) => {
+          const fieldElement = document.querySelector(`#${field}`);
+
+          if (fieldElement && !fieldElement.disabled) {
+            // Skip disabled fields
+            const fieldValue = fieldElement.value.trim();
+            if (!fieldValue) {
+              // Check if the field is empty
+              isValid = false;
+              alert(`Please fill the ${field} field.`);
+            }
+          }
+        });
+        const materialRows = {
+          ADBLUE: { GRNQty: 0, physicalStockQty: 0 },
+          "ENGINE OIL": { GRNQty: 0, physicalStockQty: 0 },
+          COOLANT: { GRNQty: 0, physicalStockQty: 0 },
+        };
+
+        // Populate GRN Qty
+        if (formData.get("adblueDef") === "Yes") {
+          materialRows.ADBLUE.GRNQty =
+            parseFloat(formData.get("DEFGRNQty")) || 0;
+        }
+        if (formData.get("engineOil") === "Yes") {
+          materialRows["ENGINE OIL"].GRNQty =
+            parseFloat(formData.get("ENGINEOILGRNQty")) || 0;
+        }
+        if (formData.get("coolant") === "Yes") {
+          materialRows.COOLANT.GRNQty =
+            parseFloat(formData.get("COOLANTGRNQty")) || 0;
+        }
+
+        // Populate Physical Stock Qty
+        const physicalStockMaterials = [
+          formData.get("physicalStockMaterial1"),
+          formData.get("physicalStockMaterial2"),
+          formData.get("physicalStockMaterial3"),
+        ];
+        const physicalStockQtys = [
+          parseFloat(formData.get("physicalStockQty1")) || 0,
+          parseFloat(formData.get("physicalStockQty2")) || 0,
+          parseFloat(formData.get("physicalStockQty3")) || 0,
+        ];
+
+        physicalStockMaterials.forEach((material, index) => {
+          if (material) {
+            materialRows[material].physicalStockQty = physicalStockQtys[index];
+          }
+        });
+
+        const rows = Object.entries(materialRows).map(
+          ([materialType, data]) => ({
+            serialNo: formData.get("serialNo") || "",
+            date: formData.get("Date") || "",
+            week: formData.get("week") || "",
+            month: formData.get("month") || "",
+            depotName: formData.get("depotName") || "",
+            GRNno: formData.get("GRNno") || "",
+            materialType,
+            GRNQty: data.GRNQty || 0,
+            physicalStockQty: data.physicalStockQty || 0,
+            TotalStockafterGRNQty:
+              parseFloat(formData.get("TotalStockafterGRNQty")) || 0,
+          })
+        );
+
+        google.script.run
+          .withSuccessHandler(() => {
+            alert("Form submitted successfully!");
+            form.reset();
+          })
+          .withFailureHandler((error) => {
+            console.error("Error submitting form:", error.message);
+          })
+          .addEntries(rows);
+      }
+
+      function toggleQuantityField(quantityFieldId, selectElement) {
+        console.log("quantity11");
+        const quantityField = document.getElementById(quantityFieldId);
+        if (selectElement.value === "Yes") {
+          quantityField.disabled = false;
+          quantityField.required = true;
+        } else {
+          quantityField.disabled = true;
+          quantityField.required = false;
+          quantityField.value = "";
+        }
+        console.log("quantity", quantityField.disabled);
+      }
+      // Toggle physical stock quantity field
+      function togglePhysicalStockQuantityField(
+        quantityFieldId,
+        selectElement
+      ) {
+        const quantityField = document.getElementById(quantityFieldId);
+        if (selectElement.value !== "") {
+          quantityField.disabled = false;
+          quantityField.required = true;
+        } else {
+          quantityField.disabled = true;
+          quantityField.required = false;
+          quantityField.value = "";
+        }
+      }
+
+      function populateWeekAndMonth() {
+        const dateField = document.getElementById("openingDate").value;
+        if (dateField) {
+          const date = new Date(dateField);
+          document.getElementById("week").value = `Week ${Math.ceil(
+            date.getDate() / 7
+          )}`;
+          document.getElementById("month").value = date.toLocaleString(
+            "default",
+            { month: "long" }
+          );
+        }
+      }
+
+      window.onload = fetchSerialNo;
+
+      function fetchSerialNo() {
+        google.script.run
+          .withSuccessHandler((serialNo) => {
+            document.getElementById("serialNo").value = serialNo;
+          })
+          .getNextSerialNo();
+      }
+    </script>
+  </body>
+</html>
